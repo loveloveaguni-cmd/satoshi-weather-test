@@ -1,0 +1,10 @@
+{
+  "name": "Satoshi Weather Wake Lock Test",
+  "short_name": "Weather Test",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#0b0d10",
+  "theme_color": "#0b0d10",
+  "orientation": "landscape",
+  "scope": "./"
+}

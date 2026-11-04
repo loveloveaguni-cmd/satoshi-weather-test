@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Satoshi Weather</title>
+<link rel="manifest" href="manifest.json">
+
+<style>
+body {
+  margin: 0;
+  background: #0b0d10;
+  color: white;
+  font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif;
+}
+
+.container {
+  padding: 10px;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  font-size: 24px;
+  color: #aaa;
+}
+
+.weather {
+  display: flex;
+  align-items: center;
+  margin-top: 10px;
+}
+
+.icon {
+  font-size: 90px;
+}
+
+.temp {
+  font-size: 100px;
+  margin-left: 25px;
+}
+
+.condition {
+  font-size: 32px;
+  margin-left: 30px;
+}
+
+.details {
+  font-size: 22px;
+  margin-top: 10px;
+}
+
+.weekly {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 10px;
+  padding: 8px 0;
+  border-top: 1px solid #444;
+  border-bottom: 1px solid #444;
+}
+
+.day {
+  flex: 1;
+  text-align: center;
+  font-size: 18px;
+}
+
+.day .date {
+  color: #aaa;
+  margin-bottom: 6px;
+}
+
+.day .weather-icon {
+  font-size: 34px;
+}ß.garbage {
+  margin-top: 30px;
+  padding-top: 22px;
+  border-top: 1px solid #444;
+  font-size: 28px;
+}
+
+.garbage strong {
+  font-size: 10px;
+}
+</style>
+<style id="wakeLockStyles">
+#wakeLockPanel{margin:18px 10px 10px;padding:12px 14px;border:1px solid #444;border-radius:8px;font-size:14px;line-height:1.5;color:#ddd}
+#wakeLockPanel .wake-controls{display:flex;flex-wrap:wrap;align-items:center;gap:8px 16px}
+#wakeLockPanel label{display:inline-flex;align-items:center;gap:8px;min-height:44px;cursor:pointer}
+#wakeLockToggle{width:20px;height:20px}
+#wakeLockRetry{font:inherit;min-height:40px;padding:6px 14px;background:#252a31;color:#fff;border:1px solid #666;border-radius:6px;cursor:pointer}
+#wakeLockRetry:disabled{opacity:.45;cursor:default}
+#wakeLockStatus{font-weight:600;color:#fff}
+#wakeLockDetail{margin:6px 0}
+#wakeLockPanel details{margin-top:8px;color:#aaa;font-size:12px}
+#wakeLockPanel summary{cursor:pointer}
+#wakeLockLog{white-space:pre-wrap;overflow-wrap:anywhere;font:inherit}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+  <div class="header">
+    <div>前橋市</div>
+    <div id="todayDate">--月--日</div>
+  </div>
+
+  <div class="weather">
+    <div class="icon" id="weatherIcon">☀️</div>
+
+<div class="temp">24℃</div>
+
+<div class="condition">
+  <span id="weatherText">晴れ</span><br>
+      <small>
+  最高 <span id="maxTemp">--</span>℃ /
+  最低 <span id="minTemp">--</span>℃
+
+</small>
+    </div>
+  </div>
+
+  <div class="details">
+  降水確率 <span id="rain">--</span>％　　湿度 <span id="humidity">--</span>％
+  </div>
+<div class="feels">
+体感 <span id="feelsLike">--</span>℃　 風速 <span id="windSpeed">--</span>km/h　UV <span id="uvIndex">--</span>
+</div>
+ <div class="weekly" id="weeklyWeather">
+  <div>週間天気を読み込み中...</div>
+</div>
+<div class="garbage">
+  <span id="garbageIcon">🗑</span> 今日のゴミ<br>
+  <strong id="todayGarbage">---</strong><br>
+  <small id="nextGarbage">次回：---</small>
+</div></div><div class="clothing">
+  👕 服装の目安<br>
+  <strong id="clothingAdvice">--</strong>
+</div><div class="advice">
+  💡 今日のアドバイス<br>
+  <strong id="todayAdvice">--</strong>
+</div>
+<section id="wakeLockPanel" aria-label="画面常時点灯">
+  <div class="wake-controls">
+    <label><input type="checkbox" id="wakeLockToggle" checked>画面を常時点灯</label>
+    <span id="wakeLockStatus" role="status" aria-live="polite">確認中</span>
+    <button type="button" id="wakeLockRetry">再試行</button>
+  </div>
+  <p id="wakeLockDetail">利用条件を確認しています。</p>
+  <details><summary>動作の詳細</summary>
+    <p id="wakeLockEnvironment"></p><pre id="wakeLockLog"></pre>
+    <p>省電力・低電池・端末の制限などにより、取得後でも解除される場合があります。画面の明るさ自動調整は別の設定です。</p>
+  </details>
+</section>
+<script>
+fetch('https://api.open-meteo.com/v1/forecast?latitude=36.39&longitude=139.06&current=temperature_2m,relative_humidity_2m,weather_code,apparent_temperature,wind_speed_10m&&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max,weather_code,uv_index_max&timezone=Asia%2FTokyo')
+  .then(response => response.json())
+  .then(data => {
+const now = new Date();
+
+document.getElementById('todayDate').textContent =
+  (now.getMonth() + 1) + '月' + now.getDate() + '日';
+function getGarbageType(date) {
+    const y = date.getFullYear();
+    const m = date.getMonth() + 1;
+    const d = date.getDate();
+
+    const key =
+        y + '-' +
+        String(m).padStart(2, '0') + '-' +
+        String(d).padStart(2, '0');
+
+    const garbageData = {// 2026年9月
+'2026-09-01': '資源ごみ',
+'2026-09-02': '燃えないごみ',
+'2026-09-03': '燃えるごみ',
+'2026-09-04': '紙・衣類等',
+'2026-09-07': '燃えるごみ',
+'2026-09-09': 'プラ容器',
+'2026-09-10': '燃えるごみ',
+'2026-09-14': '燃えるごみ',
+'2026-09-15': '資源ごみ',
+'2026-09-16': 'プラ容器',
+'2026-09-17': '燃えるごみ',
+'2026-09-18': '紙・衣類等',
+'2026-09-21': '燃えるごみ',
+'2026-09-24': '燃えるごみ',
+'2026-09-28': '燃えるごみ',
+'2026-09-29': '資源ごみ',
+'2026-09-30': 'プラ容器',
+// 2026年10月
+'2026-10-01': '燃えるごみ',
+'2026-10-02': '紙・衣類等',
+'2026-10-05': '燃えるごみ',
+'2026-10-07': '燃えないごみ',
+'2026-10-08': '燃えるごみ',
+'2026-10-12': '燃えるごみ',
+'2026-10-13': '資源ごみ',
+'2026-10-14': 'プラ容器',
+'2026-10-15': '燃えるごみ',
+'2026-10-16': '紙・衣類等',
+'2026-10-19': '燃えるごみ',
+'2026-10-21': 'プラ容器',
+'2026-10-22': '燃えるごみ',
+'2026-10-26': '燃えるごみ',
+'2026-10-27': '資源ごみ',
+'2026-10-28': 'プラ容器',
+'2026-10-29': '燃えるごみ',
+'2026-10-30': '紙・衣類等',
+
+// 2026年11月
+'2026-11-02': '燃えるごみ',
+'2026-11-04': '燃えないごみ',
+'2026-11-05': '燃えるごみ',
+'2026-11-09': '燃えるごみ',
+'2026-11-10': '資源ごみ',
+'2026-11-11': 'プラ容器',
+'2026-11-12': '燃えるごみ',
+'2026-11-13': '紙・衣類等',
+'2026-11-16': '燃えるごみ',
+'2026-11-18': 'プラ容器',
+'2026-11-19': '燃えるごみ',
+'2026-11-23': '燃えるごみ',
+'2026-11-24': '資源ごみ',
+'2026-11-25': 'プラ容器',
+'2026-11-26': '燃えるごみ',
+'2026-11-27': '紙・衣類等',
+'2026-11-30': '燃えるごみ',
+
+// 2026年12月
+'2026-12-02': '燃えないごみ',
+'2026-12-03': '燃えるごみ',
+'2026-12-07': '燃えるごみ',
+'2026-12-08': '資源ごみ',
+'2026-12-09': 'プラ容器',
+'2026-12-10': '燃えるごみ',
+'2026-12-11': '紙・衣類等',
+'2026-12-14': '燃えるごみ',
+'2026-12-16': 'プラ容器',
+'2026-12-17': '燃えるごみ',
+'2026-12-21': '燃えるごみ',
+'2026-12-22': '資源ごみ',
+'2026-12-23': 'プラ容器',
+'2026-12-24': '燃えるごみ',
+'2026-12-25': '紙・衣類等',
+'2026-12-28': '燃えるごみ',
+
+// 2027年1月
+'2027-01-04': '燃えるごみ',
+'2027-01-05': '資源ごみ',
+'2027-01-06': 'プラ容器',
+'2027-01-07': '燃えるごみ',
+'2027-01-11': '燃えるごみ',
+'2027-01-13': '燃えないごみ',
+'2027-01-14': '燃えるごみ',
+'2027-01-15': '紙・衣類等',
+'2027-01-18': '燃えるごみ',
+'2027-01-19': '資源ごみ',
+'2027-01-20': 'プラ容器',
+'2027-01-21': '燃えるごみ',
+'2027-01-25': '燃えるごみ',
+'2027-01-27': 'プラ容器',
+'2027-01-28': '燃えるごみ',
+'2027-01-29': '紙・衣類等',
+
+// 2027年2月
+'2027-02-01': '燃えるごみ',
+'2027-02-02': '資源ごみ',
+'2027-02-03': '燃えないごみ',
+'2027-02-04': '燃えるごみ',
+'2027-02-08': '燃えるごみ',
+'2027-02-10': 'プラ容器',
+'2027-02-15': '燃えるごみ',
+'2027-02-16': '資源ごみ',
+'2027-02-17': 'プラ容器',
+'2027-02-18': '燃えるごみ',
+'2027-02-22': '燃えるごみ',
+'2027-02-24': 'プラ容器',
+'2027-02-25': '燃えるごみ',
+'2027-02-26': '紙・衣類等',
+
+// 2027年3月
+'2027-03-01': '燃えるごみ',
+'2027-03-02': '資源ごみ',
+'2027-03-03': '燃えないごみ',
+'2027-03-04': '燃えるごみ',
+'2027-03-08': '燃えるごみ',
+'2027-03-10': 'プラ容器',
+'2027-03-11': '燃えるごみ',
+'2027-03-12': '紙・衣類等',
+'2027-03-15': '燃えるごみ',
+'2027-03-16': '資源ごみ',
+'2027-03-17': 'プラ容器',
+'2027-03-18': '燃えるごみ',
+'2027-03-22': '燃えるごみ',
+'2027-03-24': 'プラ容器',
+'2027-03-25': '燃えるごみ',
+'2027-03-26': '紙・衣類等',
+'2027-03-29': '燃えるごみ',
+'2027-03-30': '資源ごみ',
+'2027-03-31': 'プラ容器',
+    };
+
+    return garbageData[key] || '収集なし';
+}
+
+const todayGarbage = getGarbageType(now);
+
+document.getElementById('todayGarbage').textContent = todayGarbage;
+
+let garbageIcon = '🗑️';
+
+if (todayGarbage === '燃えるごみ') {
+    garbageIcon = '🔥';
+} else if (todayGarbage === '資源ごみ') {
+    garbageIcon = '♻️';
+} else if (todayGarbage === 'プラ容器') {
+    garbageIcon = '🧴';
+} else if (todayGarbage === '燃えないごみ') {
+    garbageIcon = '🗑️';
+} else if (todayGarbage === '紙・衣類等') {
+    garbageIcon = '📦';
+}
+
+document.getElementById('garbageIcon').textContent = garbageIcon;
+// 次回の収集日を探す
+let nextDate = new Date(now);
+
+for (let i = 1; i <= 40; i++) {
+  nextDate.setDate(nextDate.getDate() + 1);
+
+  const type = getGarbageType(nextDate);
+
+  if (type !== '収集なし') {
+    let nextIcon = '🗑️';
+
+    if (type === '燃えるごみ') {
+        nextIcon = '🔥';
+    } else if (type === '資源ごみ') {
+        nextIcon = '♻️';
+    } else if (type === 'プラ容器') {
+        nextIcon = '🧴';
+    } else if (type === '燃えないごみ') {
+        nextIcon = '🗑️';
+    } else if (type === '紙・衣類等') {
+        nextIcon = '📦';
+    }
+
+    document.getElementById('nextGarbage').textContent =
+        '次回：' +
+        (nextDate.getMonth() + 1) + '月' +
+        nextDate.getDate() + '日 ' +
+        nextIcon + ' ' + type;
+
+    break;
+}
+}
+    document.querySelector('.temp').textContent =
+      Math.round(data.current.temperature_2m) + '℃';
+document.getElementById('humidity').textContent =
+  Math.round(data.current.relative_humidity_2m);
+document.getElementById('feelsLike').textContent =
+    Math.round(data.current.apparent_temperature);
+const feels = Math.round(data.current.apparent_temperature);
+let clothing = '';
+
+if (feels >= 28) {
+    clothing = '半袖でOK。暑さ対策を忘れずに';
+} else if (feels >= 23) {
+    clothing = '半袖で快適。薄手の羽織りがあると安心';
+} else if (feels >= 18) {
+    clothing = '長袖シャツや薄手の羽織りがおすすめ';
+} else if (feels >= 13) {
+    clothing = '薄手のジャケットやパーカーがおすすめ';
+} else {
+    clothing = '上着が必要。しっかり防寒を';
+}
+
+document.getElementById('clothingAdvice').textContent = clothing;
+const rainChance = data.daily.precipitation_probability_max[0];
+const uv = data.daily.uv_index_max[0];
+const wind = data.current.wind_speed_10m;
+
+let advice = '';
+
+if (rainChance >= 70) {
+    advice = '雨が降りやすい一日。傘を忘れずに';
+} else if (uv >= 6) {
+    advice = '紫外線が強め。日焼け対策がおすすめ';
+} else if (feels >= 28) {
+    advice = '暑くなりそう。こまめに水分補給を';
+} else if (wind >= 25) {
+    advice = '風が強め。外出時は注意して';
+} else {
+    advice = '過ごしやすい一日になりそう';
+}
+
+document.getElementById('todayAdvice').textContent = advice;
+document.getElementById('windSpeed').textContent =
+    Math.round(data.current.wind_speed_10m);
+document.getElementById('uvIndex').textContent =
+    Math.round(data.daily.uv_index_max[0]);
+document.getElementById('maxTemp').textContent =
+  Math.round(data.daily.temperature_2m_max[0]);
+
+document.getElementById('minTemp').textContent =
+  Math.round(data.daily.temperature_2m_min[0]);
+document.getElementById('rain').textContent =
+  data.daily.precipitation_probability_max[0];
+const code = data.current.weather_code;
+
+let icon = '☀️';
+let text = '晴れ';
+
+if (code === 0) {
+  icon = '☀️';
+  text = '快晴';
+} else if (code === 1 || code === 2) {
+  icon = '🌤️';
+  text = '晴れ時々曇り';
+} else if (code === 3) {
+  icon = '☁️';
+  text = '曇り';
+} else if (code === 45 || code === 48) {
+  icon = '🌫️';
+  text = '霧';
+} else if ([51, 53, 55, 56, 57].includes(code)) {
+  icon = '🌦️';
+  text = '霧雨';
+} else if ([61, 63, 65, 66, 67, 80, 81, 82].includes(code)) {
+  icon = '🌧️';
+  text = '雨';
+} else if ([71, 73, 75, 77, 85, 86].includes(code)) {
+  icon = '🌨️';
+  text = '雪';
+} else if (code === 95 || code === 96 || code === 99) {
+  icon = '⛈️';
+  text = '雷雨';
+}
+
+document.getElementById('weatherIcon').textContent = icon;
+document.getElementById('weatherText').textContent = text;
+// 週間天気はここに入れる
+// 週間天気を表示
+const weekly = document.getElementById('weeklyWeather');
+weekly.innerHTML = '';
+
+for (let i = 1; i < 7; i++) {
+  const date = new Date(data.daily.time[i]);
+  const code = data.daily.weather_code[i];
+
+  let icon = '☀️';
+
+  if (code === 1 || code === 2) {
+    icon = '🌤️';
+  } else if (code === 3) {
+    icon = '☁️';
+  } else if (code === 45 || code === 48) {
+    icon = '🌫️';
+  } else if ([51,53,55,56,57,61,63,65,66,67,80,81,82].includes(code)) {
+    icon = '🌧️';
+  } else if ([71,73,75,77,85,86].includes(code)) {
+    icon = '🌨️';
+  } else if ([95,96,99].includes(code)) {
+    icon = '⛈️';
+  }
+
+  weekly.innerHTML += `
+    <div class="day">
+      <div class="date">${date.getMonth() + 1}/${date.getDate()}</div>
+      <div class="weather-icon">${icon}</div>
+    </div>
+  `;
+} 
+})
+
+  .catch(error => {
+    console.log('天気データ取得エラー:', error);
+ });
+// 日付が変わったら自動でページを更新
+let currentDate = new Date().toDateString();
+
+setInterval(() => {
+    const newDate = new Date().toDateString();
+
+    if (newDate !== currentDate) {
+        location.reload();
+    }
+}, 60000);
+</script>
+<script id="wakeLockScript">
+// Weatherの通信処理と独立した画面常時点灯コントロール。
+(function () {
+  'use strict';
+  var PREF_KEY = 'satoshi-weather-screen-awake-enabled';
+  var toggle = document.getElementById('wakeLockToggle');
+  var retry = document.getElementById('wakeLockRetry');
+  var status = document.getElementById('wakeLockStatus');
+  var detail = document.getElementById('wakeLockDetail');
+  var environment = document.getElementById('wakeLockEnvironment');
+  var log = document.getElementById('wakeLockLog');
+  var enabled = true, sentinel = null, busy = false, rerun = false;
+  var pageActive = true, lastMessage = '', history = [];
+  var secure = window.isSecureContext === true;
+  var supported = !!(navigator.wakeLock && typeof navigator.wakeLock.request === 'function');
+  try { enabled = localStorage.getItem(PREF_KEY) !== 'off'; } catch (ignore) {}
+  toggle.checked = enabled;
+
+  function visible() { return document.visibilityState === 'visible' && pageActive; }
+  function shouldHold() { return enabled && secure && supported && visible(); }
+  function refreshControls() {
+    retry.disabled = busy || !secure || !supported || (!enabled && (!sentinel || sentinel.released));
+    environment.textContent = '安全な接続: ' + (secure ? 'はい' : 'いいえ') +
+      ' / API対応: ' + (supported ? 'はい' : 'いいえ') +
+      ' / 画面: ' + document.visibilityState + ' / 接続方式: ' + window.location.protocol;
+  }
+  function show(state, message) {
+    status.textContent = state;
+    detail.textContent = message;
+    refreshControls();
+    var entry = state + '：' + message;
+    if (entry !== lastMessage) {
+      lastMessage = entry;
+      history.push(new Date().toLocaleTimeString() + ' ' + entry);
+      if (history.length > 10) history.shift();
+      log.textContent = history.join('\n');
+      if (window.console && typeof window.console.info === 'function') window.console.info('[Wake Lock] ' + entry);
+    }
+  }
+  function showIdle() {
+    if (!enabled) show('オフ', '通常の画面消灯設定に従います。');
+    else if (!secure) show('利用条件を満たしていません', 'HTTPSで開いてください。別端末からMacのIPアドレスへHTTP接続した場合は利用できません。');
+    else if (!supported) show('このブラウザは未対応です', '常時点灯は要求できません。天気表示はそのまま利用できます。');
+    else if (!visible()) show('一時停止中', '画面を離れています。戻ったときに常時点灯を再要求します。');
+  }
+  function errorText(error) {
+    return (error && error.name ? error.name : 'Error') + ': ' +
+      (error && error.message ? error.message : String(error));
+  }
+  async function reconcile(reason) {
+    // 取得待ちの間のオン・オフや復帰は最後の状態にまとめ、二重取得しない。
+    if (busy) { rerun = true; return; }
+    busy = true;
+    refreshControls();
+    try {
+      if (!shouldHold()) {
+        if (sentinel && !sentinel.released) {
+          var previous = sentinel;
+          await previous.release();
+          if (sentinel === previous) sentinel = null;
+        }
+        showIdle();
+        return;
+      }
+      if (sentinel && !sentinel.released) {
+        show('取得中（常時点灯）', '画面の自動減光・スリープを防ぐよう要求しています。');
+        return;
+      }
+      show('要求中', reason + '：常時点灯を要求しています。');
+      var acquired = await navigator.wakeLock.request('screen');
+      sentinel = acquired;
+      acquired.addEventListener('release', function () {
+        if (sentinel !== acquired) return;
+        sentinel = null;
+        if (!shouldHold()) showIdle();
+        else show('解除されました', '端末またはブラウザが要求を解除しました。電源状態などを確認し「再試行」を押してください。画面復帰時にも再要求します。');
+      });
+      // 要求待ちの間にオフ・非表示になった場合も、取得した要求を残さない。
+      if (!shouldHold()) {
+        await acquired.release();
+        if (sentinel === acquired) sentinel = null;
+        showIdle();
+      } else if (acquired.released) {
+        sentinel = null;
+        show('解除されました', '取得直後に解除されました。「再試行」で再要求できます。');
+      } else {
+        show('取得中（常時点灯）', '画面の自動減光・スリープを防ぐよう要求しています。');
+      }
+    } catch (error) {
+      show('取得・解除に失敗しました', errorText(error) + '。天気表示は継続します。条件を確認して「再試行」を押してください。');
+    } finally {
+      busy = false;
+      refreshControls();
+      if (rerun) { rerun = false; reconcile('状態変更後'); }
+    }
+  }
+  toggle.addEventListener('change', function () {
+    enabled = toggle.checked;
+    try { localStorage.setItem(PREF_KEY, enabled ? 'on' : 'off'); } catch (ignore) {}
+    reconcile('切り替え');
+  });
+  retry.addEventListener('click', function () { reconcile('手動再試行'); });
+  document.addEventListener('visibilitychange', function () { reconcile('画面復帰'); });
+  window.addEventListener('pagehide', function () { pageActive = false; reconcile('画面終了'); });
+  window.addEventListener('pageshow', function () { pageActive = true; reconcile('画面表示'); });
+  reconcile('起動');
+})();
+</script>
+<footer id="weatherDataCredit" style="margin:8px 10px 16px;font-size:12px;line-height:1.5;color:#aaa">
+天気データ：<a href="https://open-meteo.com/" style="color:inherit" target="_blank" rel="noopener noreferrer">Open-Meteo</a> / <a href="https://creativecommons.org/licenses/by/4.0/" style="color:inherit" target="_blank" rel="noopener noreferrer">CC BY 4.0</a>（気温等を丸めて表示）
+</footer>
+</body>
+</html>
