@@ -1,0 +1,17 @@
+{
+  "id": "./",
+  "name": "Satoshi Weather Ver.2",
+  "short_name": "Weather V2",
+  "lang": "ja",
+  "start_url": "./satoshi_weather_v2_landscape.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "landscape",
+  "background_color": "#0b1018",
+  "theme_color": "#0b1018",
+  "prefer_related_applications": false,
+  "icons": [
+    {"src": "./icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any"},
+    {"src": "./icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any"}
+  ]
+}

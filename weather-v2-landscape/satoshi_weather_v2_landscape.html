@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0b1018">
+<title>Satoshi Weather Ver.2 横画面試作版</title>
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" href="./icon-192.png">
+<meta name="mobile-web-app-capable" content="yes">
+<style>
+*{box-sizing:border-box}html,body{margin:0;width:100%;background:#0b1018;color:#f3f6fc;font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",sans-serif}html{overflow-x:hidden;overflow-y:auto;overflow-anchor:none;scroll-behavior:auto}body{font-variant-numeric:tabular-nums;overflow-anchor:none}.dashboard{height:var(--weather-height,100vh);min-height:360px;padding:8px 10px;display:grid;grid-template-columns:minmax(0,3fr) minmax(0,7fr);grid-template-rows:28px minmax(0,3fr) minmax(0,1fr);grid-template-areas:"header header" "current hourly" "weekly weekly";gap:7px 10px;overflow:hidden}.header{grid-area:header;display:flex;align-items:center;justify-content:space-between;min-width:0}.place{font-size:18px;font-weight:700}.place small{font-size:11px;font-weight:400;color:#8ea3bf;margin-left:8px}.updated{text-align:right;font-size:11px;line-height:1.35;color:#a5b4c9}.updated strong{color:#e4ecf8}.warning{color:#ffbc76!important}.panel{min-width:0;min-height:0;background:#101925;border:1px solid #2c3d54;border-radius:11px;overflow:hidden}.current{grid-area:current;padding:9px 11px;display:flex;flex-direction:column;justify-content:space-between;gap:4px}.current-head{display:flex;flex-direction:column;gap:2px;color:#b3c3d8;font-size:13px;order:0}.current-content{display:contents}.current-content>div{order:1}.temperature{display:flex;align-items:center;gap:7px;white-space:nowrap}.current-icon{font-size:clamp(34px,5.5vw,52px);line-height:1.35;letter-spacing:-.09em}.current-temp{font-size:clamp(48px,15vh,76px);font-weight:600;letter-spacing:-.055em;line-height:1.23}.unit{font-size:.43em;letter-spacing:0}.unknown-temp{font-size:.5em;letter-spacing:0}.condition{font-size:clamp(16px,2.5vw,23px);line-height:1.25}.stats{order:2;display:flex;flex-wrap:wrap;gap:3px 10px;font-size:13px;line-height:1.4;color:#b7c9e0}.stats b{font-weight:500;color:#eef4ff}.secondary{font-size:11px;color:#94a9c4}.high{color:#ffad68!important}.low{color:#82bcff!important}.advice{order:4;border-top:1px solid #344960;padding-top:6px;min-width:0;font-size:12px;line-height:1.6}.advice p{margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.advice p+p{color:#b7c8df}.hourly{grid-area:hourly;padding:9px 8px 6px;display:flex;flex-direction:column}.section-head{display:flex;align-items:center;justify-content:space-between;min-height:19px;gap:5px;padding:0 4px}.section-head h2{margin:0;font-size:16px;font-weight:600;white-space:nowrap}.legend{font-size:11px;display:flex;gap:10px;white-space:nowrap}.legend .t{color:#ffa153}.legend .r{color:#64b5ff}.graph{flex:1;min-height:0;width:100%;display:block;margin-top:4px}.grid-line{stroke:#2b3b50;stroke-width:1}.vertical-line{stroke:#203047;stroke-width:1}.temp-axis{fill:#ffad68;font-size:18px}.rain-axis{fill:#82bcff;font-size:18px}.midnight-line{stroke:#9aa9bf;stroke-width:1.3;stroke-dasharray:4 4}.midnight-label{fill:#c9d7e9;font-size:16px}.temp-curve,.rain-curve{fill:none;stroke-linejoin:round;stroke-linecap:round;stroke-width:3;vector-effect:non-scaling-stroke}.temp-curve{stroke:#ff9b46}.rain-curve{stroke:#52adff}.temp-dot{fill:#ff9b46}.rain-dot{fill:#52adff}.hourly-labels{display:flex;margin:0 5.9%;flex-shrink:0}.hour{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;gap:1px;font-size:11px}.hour-date{font-size:9px;color:#98aac2}.hour strong{font-weight:500;white-space:nowrap}.hour-icon{font-size:23px;line-height:1.35;height:1.35em;letter-spacing:-.1em;white-space:nowrap}.hour-temp{font-size:13px;color:#ffb277}.hour-rain{font-size:9px;color:#7ebeff;white-space:nowrap}.chart-note{margin:4px 0 0;font-size:9px;color:#9dafc6;text-align:center;flex-shrink:0}.weekly{grid-area:weekly;padding:5px 7px;display:flex;flex-direction:column}.week-legend{font-size:10px;color:#a7b8ce}.weekly .section-head{min-height:16px}.weekly .section-head h2{font-size:13px}.weekly-days{display:flex;flex:1;min-height:0;margin-top:3px}.week-day{flex:1;min-width:0;display:grid;grid-template-columns:1fr 1.2fr 1.2fr;grid-template-rows:1fr 1fr;align-items:center;justify-items:center;border-right:1px solid #2a3b53;padding:0 5px;column-gap:2px}.week-day:last-child{border-right:0}.week-date{grid-area:1/1;font-size:13px;white-space:nowrap}.weekday{grid-area:2/1;font-size:11px;color:#a8bcd6}.week-icon{grid-area:1/2/3/3;font-size:28px;line-height:1.4}.week-high{grid-area:1/3;font-size:19px;color:#ffad68;white-space:nowrap;line-height:1.25}.week-low{grid-area:2/3;font-size:19px;color:#82bcff;white-space:nowrap;line-height:1.25}.week-day small{font-size:.5em}.settings{margin:12px 10px 24px;padding:20px;max-width:100%;border:1px solid #344b68;border-radius:12px;background:#101925;overflow-anchor:none}.settings h2{margin:0 0 15px;font-size:22px}.settings>p{color:#a9bdd8;font-size:13px}.wake-controls{display:flex;flex-wrap:wrap;align-items:center;gap:12px 20px;font-size:16px}.wake-controls label{display:flex;align-items:center;gap:8px;min-height:44px;cursor:pointer}#wakeLockToggle{width:22px;height:22px;accent-color:#80b9ff}#wakeLockStatus{color:#a4dcb7}button{border:1px solid #526e90;border-radius:7px;padding:10px 14px;min-height:44px;color:#e2efff;background:#22354d;font:inherit;cursor:pointer}button:disabled{opacity:.45}#wakeLockDetail{color:#bdd0e9;font-size:14px;line-height:1.6}.wake-details{margin-top:15px;padding:12px;border-top:1px solid #344960;overflow-wrap:anywhere;font-size:13px;color:#abbfda}.wake-details summary{cursor:pointer;min-height:28px}#wakeLockDetailCopy{display:none}#wakeLockLog{white-space:pre-wrap;overflow-wrap:anywhere;font:inherit}#fetchDetail{color:#ffc089}.attribution{margin-top:20px;font-size:11px;line-height:1.6;color:#95aac6}.attribution a{color:inherit}#pwaStatus{font-size:12px;color:#a7bdd9}
+@media(min-height:500px) and (orientation:landscape){.current{padding:14px}.current-temp{font-size:clamp(70px,14vh,100px)}.current-icon{font-size:58px}.stats{font-size:15px}.secondary,.advice{font-size:13px}.hour{font-size:13px;gap:3px}.hour-icon{font-size:27px}.hour-temp{font-size:16px}.hour-date,.hour-rain,.chart-note{font-size:11px}.week-icon{font-size:36px}.week-high,.week-low{font-size:23px}}
+@media(orientation:portrait){.dashboard{height:auto;min-height:var(--weather-height,100vh);grid-template-columns:minmax(0,1fr);grid-template-rows:34px 245px 350px 135px;grid-template-areas:"header" "current" "hourly" "weekly"}.current{padding:12px 16px}.current-content{display:flex;justify-content:space-between;align-items:center;gap:12px}.advice{border:0}.current-temp{font-size:64px}.week-day{padding:0 2px;grid-template-columns:1fr;grid-template-rows:repeat(5,1fr)}.week-date{grid-area:1/1}.weekday{grid-area:2/1}.week-icon{grid-area:3/1;font-size:23px}.week-high{grid-area:4/1;font-size:16px}.week-low{grid-area:5/1;font-size:16px}.place{font-size:16px}.place small{font-size:9px}.legend{font-size:10px}}
+/* 診断の文字数が変わっても、ページの下端やスクロール位置を動かさない。 */
+#wakeLockDetail{min-height:48px}#wakeLockLog{height:180px;overflow:auto;padding:8px;background:#0b1422;border-radius:6px}#fetchDetail{height:42px;overflow:auto}#pwaStatus{min-height:36px}
+@media(orientation:landscape) and (max-height:499px){.current{padding:8px 10px;gap:2px}.current-temp{font-size:clamp(48px,13vh,68px);line-height:1.18}.current-head{font-size:12px}.current-head .secondary{font-size:10px}.condition{font-size:20px}.stats{font-size:12px;line-height:1.35;gap:2px 7px;flex-shrink:0}.stats.secondary{font-size:10.5px}.advice{font-size:11.5px;line-height:1.55;padding-top:5px;flex-shrink:0}}
+.install-slot{min-height:52px}[hidden]{display:none!important}
+
+</style>
+</head>
+<body>
+<main class="dashboard">
+ <header class="header"><div class="place">前橋市<small>Weather Ver.2</small></div><div class="updated">最終更新 <strong id="updatedTime">未取得</strong><div id="updateStatus" role="status">読み込み中…</div></div></header>
+ <section class="panel current" aria-label="現在の天気">
+  <div class="current-head"><span id="todayDate">--/--</span><span id="observationTime" class="secondary">現在の天気を取得中</span></div>
+  <div class="current-content"><div><div class="temperature"><span id="weatherIcon" class="current-icon">？</span><span class="current-temp"><span id="currentTemp">--</span><span class="unit">℃</span></span></div><div id="weatherText" class="condition">確認中</div></div><aside class="advice"><p id="adviceClothes">服装の目安を確認中</p><p id="adviceWeather">天気のアドバイスを確認中</p></aside></div>
+  <div class="stats"><span>体感 <b id="feelsLike">--</b>℃</span><span>湿度 <b id="humidity">--</b>％</span><span>最高 <b id="maxTemp" class="high">--</b>℃ / 最低 <b id="minTemp" class="low">--</b>℃</span></div>
+  <div class="stats secondary"><span>風速 <span id="windSpeed">--</span>km/h</span><span>降水確率 <span id="rainChance">--</span>％</span><span>UV <span id="uvIndex">--</span></span></div>
+ </section>
+ <section class="panel hourly" aria-labelledby="hourlyTitle"><div class="section-head"><h2 id="hourlyTitle">これから24時間</h2><div class="legend"><span class="t">━ 気温 ℃（左）</span><span class="r">━ 降水量 mm（右）</span></div></div><svg id="forecastChart" class="graph" viewBox="0 0 720 300" preserveAspectRatio="none" role="img" aria-label="24時間の気温と降水量"></svg><div id="hourlyLabels" class="hourly-labels"></div><p id="hourlyNote" class="chart-note">時間別予報を取得中</p></section>
+ <section class="panel weekly" aria-labelledby="weeklyTitle"><div class="section-head"><h2 id="weeklyTitle">これから6日間</h2><span class="week-legend"><span class="high">最高</span> / <span class="low">最低</span> ℃</span></div><div id="weeklyWeather" class="weekly-days">週間予報を取得中</div></section>
+
+</main>
+<section class="settings" id="settingsArea" aria-labelledby="settingsTitle"><h2 id="settingsTitle">設定・操作</h2><p>通常の天気画面へ戻るには上へスクロールしてください。</p><section id="wakeLockPanel" aria-label="画面常時点灯"><div class="wake-controls"><label><input type="checkbox" id="wakeLockToggle" checked>常時点灯</label><span id="wakeLockStatus" role="status">確認中</span><button type="button" id="wakeLockRetry">再試行</button><button type="button" id="refreshButton">天気更新</button></div><p id="wakeLockDetail">利用条件を確認中</p><details class="wake-details" open><summary>動作の詳細</summary><p id="wakeLockEnvironment"></p><p id="wakeLockDetailCopy"></p><pre id="wakeLockLog"></pre><p id="fetchDetail"></p><p>再試行は常時点灯、天気更新は予報を取得します。天気の再取得は最短1分間隔です。端末の省電力などで常時点灯が解除される場合があります。明るさ自動調整は別の設定です。</p></details></section><div class="attribution">天気データ：<a href="https://open-meteo.com/">Open-Meteo</a> / <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>（丸め・グラフ化）<br><span>時刻は日本時間・気温と降水量は別目盛り</span></div><p id="pwaStatus"></p><div class="install-slot"><button type="button" id="installButton" hidden>ホーム画面に追加</button></div></section>
+<script id="weatherV2Script">var WeatherV2 = (function () {
+  'use strict';
+  var HOUR = 3600000, PERIOD = 30 * 60000, MIN_RETRY = 60000;
+  var API = 'https://api.open-meteo.com/v1/forecast?latitude=36.39&longitude=139.06&timezone=Asia%2FTokyo&timeformat=unixtime&forecast_days=7&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m,is_day&hourly=temperature_2m,precipitation,weather_code,is_day&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,uv_index_max';
+  var data = null, lastSuccess = 0, lastAttempt = null, busy = false, failed = false;
+  var timer, lastHour = null, lastDay = null;
+  function el(id) { return document.getElementById(id); }
+  function put(id, value) { el(id).textContent = value; }
+  function valid(v) { return typeof v === 'number' && Number.isFinite(v); }
+  function number(v, digits) { return valid(v) ? (digits ? v.toFixed(digits) : String(Math.round(v))) : '不明'; }
+  function value(a, i) { return Array.isArray(a) && i >= 0 && i < a.length && valid(a[i]) ? a[i] : null; }
+  function jst(ms) { return new Date(ms + 9 * HOUR); }
+  function key(ms) { return jst(ms).toISOString().slice(0, 10); }
+  function clock(ms) { var d = jst(ms); return String(d.getUTCHours()).padStart(2, '0') + ':' + String(d.getUTCMinutes()).padStart(2, '0'); }
+  function dateLabel(ms) { var d = jst(ms); return (d.getUTCMonth() + 1) + '/' + d.getUTCDate(); }
+  function weather(code, day) {
+    if (!valid(code)) return { icon: '？', text: '不明' };
+    if (code === 0) return { icon: day === 0 ? '🌙' : (day === 1 ? '☀️' : '？'), text: '快晴' };
+    if (code === 1 || code === 2) return { icon: day === 0 ? '🌙' : (day === 1 ? '🌤️' : '☁️'), text: '晴れ時々曇り' };
+    if (code === 3) return { icon: '☁️', text: '曇り' };
+    if (code === 45 || code === 48) return { icon: '🌫️', text: '霧' };
+    if ([51, 53, 55, 56, 57].indexOf(code) >= 0) return { icon: '🌧️', text: '霧雨' };
+    if ([61, 63, 65, 66, 67, 80, 81, 82].indexOf(code) >= 0) return { icon: '🌧️', text: '雨' };
+    if ([71, 73, 75, 77, 85, 86].indexOf(code) >= 0) return { icon: '🌨️', text: '雪' };
+    if ([95, 96, 99].indexOf(code) >= 0) return { icon: '⛈️', text: '雷雨' };
+    return { icon: '？', text: '不明' };
+  }
+  function advice(current, daily, i) {
+    var f = current.apparent_temperature, rain = value(daily.precipitation_probability_max, i), uv = value(daily.uv_index_max, i);
+    var clothes = !valid(f) ? '体感温度は不明です。' : f >= 28 ? '半袖で暑さ対策を。' : f >= 23 ? '半袖と羽織りを。' : f >= 18 ? '長袖と羽織りを。' : f >= 13 ? 'ジャケットなどを。' : '暖かい上着を。';
+    var tip = valid(rain) && rain >= 70 ? '傘を忘れずに。' : valid(uv) && uv >= 6 ? '日焼け対策も。' : valid(f) && f >= 28 ? 'こまめに水分補給を。' : valid(current.wind_speed_10m) && current.wind_speed_10m >= 25 ? '強い風に注意。' : '外出前に予報を確認。';
+    return [clothes, tip];
+  }
+  function dailyIndex(daily, ms) {
+    return daily.time.findIndex(function (t) { return valid(t) && key(t * 1000) === key(ms); });
+  }
+  // Unix秒で照合し、Macや端末のタイムゾーンに依存させない。
+  function points(hourly, now) {
+    var start = Math.floor(now / HOUR) * HOUR, lookup = {};
+    hourly.time.forEach(function (t, i) { if (valid(t)) lookup[t] = i; });
+    return Array.from({ length: 25 }, function (_, n) {
+      var ms = start + n * HOUR, i = lookup[ms / 1000];
+      return { time: ms, temp: value(hourly.temperature_2m, i), rain: value(hourly.precipitation, i), code: value(hourly.weather_code, i), day: value(hourly.is_day, i) };
+    });
+  }
+  function scales(p) {
+    var temps = p.map(function (x) { return x.temp; }).filter(valid), rains = p.map(function (x) { return x.rain; }).filter(valid);
+    var lo = temps.length ? Math.floor((Math.min.apply(null, temps) - 2) / 5) * 5 : 0;
+    var hi = temps.length ? Math.ceil((Math.max.apply(null, temps) + 2) / 5) * 5 : 10;
+    return { lo: lo, hi: Math.max(lo + 5, hi), rain: Math.max(1, rains.length ? Math.ceil(Math.max.apply(null, rains) * 1.2 * 2) / 2 : 1) };
+  }
+  // 水平方向に接線を置く補間。欠損では線を切り、値を超える山谷を作らない。
+  function curve(p, field, y) {
+    var out = '', previous = null;
+    p.forEach(function (point, i) {
+      if (!valid(point[field])) { previous = null; return; }
+      var x = 60 + i * 25, yy = y(point[field]);
+      if (!previous) out += 'M' + x + ',' + yy;
+      else { var mid = (previous.x + x) / 2; out += ' C' + mid + ',' + previous.y + ' ' + mid + ',' + yy + ' ' + x + ',' + yy; }
+      previous = { x: x, y: yy };
+    });
+    return out;
+  }
+  function chart(p) {
+    var s = scales(p), ty = function (v) { return 272 - (v - s.lo) / (s.hi - s.lo) * 240; }, ry = function (v) { return 272 - v / s.rain * 240; };
+    var svg = '<title>24時間の気温と降水量。左のオレンジが摂氏、右の青が1時間の降水量ミリメートル。</title>';
+    for (var n = 0; n <= 4; n++) {
+      var y = 272 - n * 60;
+      svg += '<line x1="60" x2="660" y1="' + y + '" y2="' + y + '" class="grid-line"/>';
+      svg += '<text x="50" y="' + (y + 6) + '" text-anchor="end" class="temp-axis">' + number(s.lo + n * (s.hi - s.lo) / 4, 1) + '</text>';
+      svg += '<text x="670" y="' + (y + 6) + '" class="rain-axis">' + number(n * s.rain / 4, 1) + '</text>';
+    }
+    p.forEach(function (point, i) {
+      var x = 60 + i * 25;
+      if (i % 3 === 0) svg += '<line x1="' + x + '" x2="' + x + '" y1="32" y2="272" class="vertical-line"/>';
+      if (jst(point.time).getUTCHours() === 0) svg += '<line x1="' + x + '" x2="' + x + '" y1="18" y2="280" class="midnight-line"/><text x="' + x + '" y="14" text-anchor="middle" class="midnight-label">' + dateLabel(point.time) + '</text>';
+    });
+    svg += '<path d="' + curve(p, 'rain', ry) + '" class="rain-curve"/><path d="' + curve(p, 'temp', ty) + '" class="temp-curve"/>';
+    p.forEach(function (point, i) {
+      if (valid(point.temp)) svg += '<circle cx="' + (60 + i * 25) + '" cy="' + ty(point.temp) + '" r="2.6" class="temp-dot"/>';
+      if (valid(point.rain)) svg += '<circle cx="' + (60 + i * 25) + '" cy="' + ry(point.rain) + '" r="2.2" class="rain-dot"/>';
+    });
+    el('forecastChart').innerHTML = svg;
+    el('hourlyLabels').innerHTML = p.filter(function (_, i) { return i % 3 === 0; }).map(function (point, i) {
+      var w = weather(point.code, point.day), time = jst(point.time).getUTCHours();
+      return '<div class="hour"><span class="hour-date">' + dateLabel(point.time) + '</span><strong>' + (i === 0 ? '今 ' : '') + time + '時</strong><span class="hour-icon" aria-label="' + w.text + '">' + w.icon + '</span><span class="hour-temp">' + number(point.temp) + (valid(point.temp) ? '°' : '') + '</span><span class="hour-rain">' + number(point.rain, 1) + (valid(point.rain) ? 'mm' : '') + '</span></div>';
+    }).join('');
+    var missing = p.some(function (x) { return !valid(x.temp) || !valid(x.rain) || !valid(x.code) || !valid(x.day); });
+    put('hourlyNote', '降水量は各時刻までの1時間分' + (missing ? ' ・ 一部不明（線を切って表示）' : ' ・ 左端は現在の時間帯'));
+  }
+  function render(now) {
+    var d = jst(now); put('todayDate', dateLabel(now) + '（' + '日月火水木金土'[d.getUTCDay()] + '）');
+    if (!data) return;
+    var daily = data.daily, i = dailyIndex(daily, now), c = data.current, w = weather(c.weather_code, c.is_day);
+    put('currentTemp', number(c.temperature_2m)); el('currentTemp').className = valid(c.temperature_2m) ? '' : 'unknown-temp'; put('weatherIcon', w.icon); put('weatherText', w.text);
+    put('feelsLike', number(c.apparent_temperature)); put('humidity', number(c.relative_humidity_2m)); put('windSpeed', number(c.wind_speed_10m));
+    put('maxTemp', number(value(daily.temperature_2m_max, i))); put('minTemp', number(value(daily.temperature_2m_min, i)));
+    put('rainChance', number(value(daily.precipitation_probability_max, i))); put('uvIndex', number(value(daily.uv_index_max, i)));
+    var a = advice(c, daily, i); put('adviceClothes', a[0]); put('adviceWeather', a[1]);
+    put('updatedTime', dateLabel(lastSuccess) + ' ' + clock(lastSuccess));
+    var old = now - lastSuccess >= HOUR;
+    el('updateStatus').className = failed || old ? 'warning' : '';
+    put('updateStatus', failed ? '更新失敗・前回のデータを表示中' : old ? '1時間以上更新されていません' : '30分ごとに自動更新');
+    put('observationTime', valid(c.time) ? '現在値 ' + dateLabel(c.time * 1000) + ' ' + clock(c.time * 1000) : '現在値の時刻は不明');
+    chart(points(data.hourly, now));
+    var days = [];
+    for (var n = 1; n <= 6; n++) {
+      var ms = now + n * 24 * HOUR, ix = dailyIndex(daily, ms), icon = weather(value(daily.weather_code, ix), 1);
+      days.push('<div class="week-day"><div class="week-date">' + dateLabel(ms) + '</div><div class="weekday">' + '日月火水木金土'[jst(ms).getUTCDay()] + '</div><div class="week-icon" aria-label="' + icon.text + '">' + icon.icon + '</div><div class="week-high">' + number(value(daily.temperature_2m_max, ix)) + '<small>℃</small></div><div class="week-low">' + number(value(daily.temperature_2m_min, ix)) + '<small>℃</small></div></div>');
+    }
+    el('weeklyWeather').innerHTML = days.join('');
+  }
+  function validate(d) {
+    if (!d || !d.current || typeof d.current !== 'object' || !d.hourly || !Array.isArray(d.hourly.time) || !d.hourly.time.some(valid) || !d.daily || !Array.isArray(d.daily.time) || !d.daily.time.some(valid)) throw new Error('天気データの形式を確認できません');
+    return d;
+  }
+  async function refresh() {
+    var now = Date.now();
+    if (busy || (lastAttempt !== null && now - lastAttempt < MIN_RETRY)) return;
+    busy = true; lastAttempt = now; el('refreshButton').disabled = true;
+    var abort = new AbortController(), timeout = setTimeout(function () { abort.abort(); }, 20000);
+    put('updateStatus', '更新中…');
+    try {
+      var response = await fetch(API, { signal: abort.signal, cache: 'no-store' });
+      if (!response.ok) throw new Error('HTTP ' + response.status);
+      var next = validate(await response.json());
+      data = next; lastSuccess = Date.now(); failed = false;
+      put('fetchDetail', '');
+    } catch (error) {
+      failed = true; put('fetchDetail', error.name + ': ' + error.message);
+      console.warn('[Weather V2] 更新失敗', error);
+    } finally {
+      clearTimeout(timeout); busy = false; el('refreshButton').disabled = false;
+      render(Date.now());
+      if (!data) { put('updateStatus', '取得できません・1分後から再試行できます'); el('updateStatus').className = 'warning'; }
+      clearTimeout(timer);
+      timer = setTimeout(function () { if (document.visibilityState === 'visible') refresh(); }, PERIOD);
+    }
+  }
+  function tick() {
+    if (document.visibilityState !== 'visible') return;
+    var now = Date.now(), hour = Math.floor(now / HOUR), day = key(now), dayChanged = lastDay !== null && lastDay !== day;
+    if (hour !== lastHour || day !== lastDay) { render(now); lastHour = hour; lastDay = day; }
+    if (dayChanged || !lastSuccess || now - lastSuccess >= PERIOD) {
+      // 失敗後も1分ごとに連打せず、定期再試行は30分ごと。
+      if (lastAttempt === null || now - lastAttempt >= PERIOD || (dayChanged && !failed)) refresh();
+    }
+  }
+  function resume() { tick(); if (Date.now() - lastSuccess >= PERIOD) refresh(); }
+  function init() {
+    render(Date.now()); lastDay = key(Date.now()); lastHour = Math.floor(Date.now() / HOUR);
+    el('refreshButton').addEventListener('click', function () { refresh(); });
+    document.addEventListener('visibilitychange', function () { if (document.visibilityState === 'visible') resume(); });
+    window.addEventListener('pageshow', resume); window.addEventListener('online', resume);
+    // 時間軸の描き直しは1時間に1回。APIは通常30分に1回のみ。
+    setInterval(tick, 60000); refresh();
+  }
+  return { init: init, refresh: refresh, tick: tick, valid: valid, number: number, key: key, weather: weather, points: points, scales: scales, curve: curve, validate: validate, render: render, api: API };
+})();
+WeatherV2.init();
+</script>
+<!-- Wake Lockの制御処理は元試作版と同一 -->
+<script id="wakeLockScript">
+// Weatherの通信処理と独立した画面常時点灯コントロール。
+(function () {
+  'use strict';
+  var PREF_KEY = 'satoshi-weather-screen-awake-enabled';
+  var toggle = document.getElementById('wakeLockToggle');
+  var retry = document.getElementById('wakeLockRetry');
+  var status = document.getElementById('wakeLockStatus');
+  var detail = document.getElementById('wakeLockDetail');
+  var environment = document.getElementById('wakeLockEnvironment');
+  var log = document.getElementById('wakeLockLog');
+  var enabled = true, sentinel = null, busy = false, rerun = false;
+  var pageActive = true, lastMessage = '', history = [];
+  var secure = window.isSecureContext === true;
+  var supported = !!(navigator.wakeLock && typeof navigator.wakeLock.request === 'function');
+  try { enabled = localStorage.getItem(PREF_KEY) !== 'off'; } catch (ignore) {}
+  toggle.checked = enabled;
+
+  function visible() { return document.visibilityState === 'visible' && pageActive; }
+  function shouldHold() { return enabled && secure && supported && visible(); }
+  function refreshControls() {
+    retry.disabled = busy || !secure || !supported || (!enabled && (!sentinel || sentinel.released));
+    environment.textContent = '安全な接続: ' + (secure ? 'はい' : 'いいえ') +
+      ' / API対応: ' + (supported ? 'はい' : 'いいえ') +
+      ' / 画面: ' + document.visibilityState + ' / 接続方式: ' + window.location.protocol;
+  }
+  function show(state, message) {
+    status.textContent = state;
+    detail.textContent = message;
+    refreshControls();
+    var entry = state + '：' + message;
+    if (entry !== lastMessage) {
+      lastMessage = entry;
+      history.push(new Date().toLocaleTimeString() + ' ' + entry);
+      if (history.length > 10) history.shift();
+      log.textContent = history.join('\n');
+      if (window.console && typeof window.console.info === 'function') window.console.info('[Wake Lock] ' + entry);
+    }
+  }
+  function showIdle() {
+    if (!enabled) show('オフ', '通常の画面消灯設定に従います。');
+    else if (!secure) show('利用条件を満たしていません', 'HTTPSで開いてください。別端末からMacのIPアドレスへHTTP接続した場合は利用できません。');
+    else if (!supported) show('このブラウザは未対応です', '常時点灯は要求できません。天気表示はそのまま利用できます。');
+    else if (!visible()) show('一時停止中', '画面を離れています。戻ったときに常時点灯を再要求します。');
+  }
+  function errorText(error) {
+    return (error && error.name ? error.name : 'Error') + ': ' +
+      (error && error.message ? error.message : String(error));
+  }
+  async function reconcile(reason) {
+    // 取得待ちの間のオン・オフや復帰は最後の状態にまとめ、二重取得しない。
+    if (busy) { rerun = true; return; }
+    busy = true;
+    refreshControls();
+    try {
+      if (!shouldHold()) {
+        if (sentinel && !sentinel.released) {
+          var previous = sentinel;
+          await previous.release();
+          if (sentinel === previous) sentinel = null;
+        }
+        showIdle();
+        return;
+      }
+      if (sentinel && !sentinel.released) {
+        show('取得中（常時点灯）', '画面の自動減光・スリープを防ぐよう要求しています。');
+        return;
+      }
+      show('要求中', reason + '：常時点灯を要求しています。');
+      var acquired = await navigator.wakeLock.request('screen');
+      sentinel = acquired;
+      acquired.addEventListener('release', function () {
+        if (sentinel !== acquired) return;
+        sentinel = null;
+        if (!shouldHold()) showIdle();
+        else show('解除されました', '端末またはブラウザが要求を解除しました。電源状態などを確認し「再試行」を押してください。画面復帰時にも再要求します。');
+      });
+      // 要求待ちの間にオフ・非表示になった場合も、取得した要求を残さない。
+      if (!shouldHold()) {
+        await acquired.release();
+        if (sentinel === acquired) sentinel = null;
+        showIdle();
+      } else if (acquired.released) {
+        sentinel = null;
+        show('解除されました', '取得直後に解除されました。「再試行」で再要求できます。');
+      } else {
+        show('取得中（常時点灯）', '画面の自動減光・スリープを防ぐよう要求しています。');
+      }
+    } catch (error) {
+      show('取得・解除に失敗しました', errorText(error) + '。天気表示は継続します。条件を確認して「再試行」を押してください。');
+    } finally {
+      busy = false;
+      refreshControls();
+      if (rerun) { rerun = false; reconcile('状態変更後'); }
+    }
+  }
+  toggle.addEventListener('change', function () {
+    enabled = toggle.checked;
+    try { localStorage.setItem(PREF_KEY, enabled ? 'on' : 'off'); } catch (ignore) {}
+    reconcile('切り替え');
+  });
+  retry.addEventListener('click', function () { reconcile('手動再試行'); });
+  document.addEventListener('visibilitychange', function () { reconcile('画面復帰'); });
+  window.addEventListener('pagehide', function () { pageActive = false; reconcile('画面終了'); });
+  window.addEventListener('pageshow', function () { pageActive = true; reconcile('画面表示'); });
+  reconcile('起動');
+})();
+</script>
+<script id="pageShellScript">
+(function () {
+  'use strict';
+  // アドレスバーがスクロールで伸縮しても天気欄の高さを変えず、位置ずれを防ぐ。
+  var width = window.innerWidth;
+  function size(force) {
+    if (!force && Math.abs(window.innerWidth - width) < 4) return;
+    width = window.innerWidth;
+    document.documentElement.style.setProperty('--weather-height', window.innerHeight + 'px');
+  }
+  size(true);
+  window.addEventListener('resize', function () { size(false); });
+  window.addEventListener('orientationchange', function () { setTimeout(function () { size(true); }, 300); });
+  var detail = document.getElementById('wakeLockDetail');
+  new MutationObserver(function () { document.getElementById('wakeLockDetailCopy').textContent = detail.textContent; }).observe(detail, { childList: true, subtree: true, characterData: true });
+  document.getElementById('wakeLockDetailCopy').textContent = detail.textContent;
+  var pwa = document.getElementById('pwaStatus');
+  var installButton = document.getElementById('installButton'), installEvent = null;
+  window.addEventListener('beforeinstallprompt', function (event) {
+    // 天気の上にChromeの追加案内を重ねず、操作は設定欄だけに置く。
+    event.preventDefault(); installEvent = event; installButton.hidden = false;
+    pwa.textContent = 'このChromeでホーム画面への追加を利用できます。追加は下のボタンから手動で行ってください。';
+  });
+  installButton.addEventListener('click', async function () {
+    if (!installEvent) return;
+    var pending = installEvent; installEvent = null; installButton.hidden = true;
+    try {
+      await pending.prompt(); var choice = await pending.userChoice;
+      pwa.textContent = choice.outcome === 'accepted' ? '追加を受け付けました。ホーム画面のアイコンから起動してください。' : '追加を見送りました。通常のChromeでも利用できます。';
+    } catch (error) { pwa.textContent = '追加を実行できませんでした: ' + error.message; }
+  });
+  if (!window.isSecureContext || !('serviceWorker' in navigator)) {
+    pwa.textContent = 'アプリ風の起動にはHTTPS（または検証用localhost）と対応Chromeが必要です。';
+    return;
+  }
+  // スコープはこの試作版のフォルダ内だけ。既存サイトを管理しない。
+  navigator.serviceWorker.register('./sw.js', { scope: './' }).then(function () {
+    pwa.textContent = 'アプリ用の構成を準備しました。HTTPS公開後、Chromeの「ホーム画面に追加」から起動してください。';
+  }).catch(function (error) {
+    pwa.textContent = 'アプリ用の準備に失敗: ' + error.message + '。天気表示と常時点灯は引き続き利用できます。';
+  });
+})();
+
+</script>
+</body>
+</html>
